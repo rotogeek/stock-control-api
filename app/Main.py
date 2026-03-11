@@ -17,7 +17,7 @@ Once running, visit http://localhost:8000/docs for interactive API docs.
 """
 
 from fastapi import FastAPI
-from app import config
+from app import Config as config
 
 # =============================================================================
 # Create the Application
