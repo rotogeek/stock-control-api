@@ -1,0 +1,18 @@
+# =============================================================================
+# Project Dependencies (pinned versions for reproducibility)
+# =============================================================================
+# Install with: pip install -r requirements.txt
+# Why pin versions? See docs/ARCHITECTURE.md
+# =============================================================================
+
+# Web framework — handles HTTP requests, routing, and auto-generated docs
+fastapi==0.115.0
+
+# ASGI server — runs the FastAPI application
+uvicorn[standard]==0.30.0
+
+# Data validation — enforces data shapes and rules
+pydantic==2.9.0
+
+# Environment variable loading — reads .env files securely
+python-dotenv==1.0.1
