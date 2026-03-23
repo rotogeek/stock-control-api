@@ -18,7 +18,7 @@ Once running, visit http://localhost:8000/docs for interactive API docs.
 
 from fastapi import FastAPI
 from app import Config as config
-from app.routes import till_rolls
+from app.routes import chargers, cleaning, till_rolls
 
 # =============================================================================
 # Create the Application
@@ -45,6 +45,8 @@ app = FastAPI(
 # Each router is its own file. Adding a category = one line here.
 
 app.include_router(till_rolls.router)
+app.include_router(chargers.router)
+app.include_router(cleaning.router)
 
 
 @app.get("/health")
