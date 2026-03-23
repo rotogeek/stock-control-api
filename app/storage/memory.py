@@ -67,6 +67,15 @@ _transactions: list[dict] = []
 
 
 # =============================================================================
+# Device Log — own-stock devices tracked by serial number
+# =============================================================================
+# Devices aren't counted — each one is a unique item with its own identity.
+# We don't store a quantity. We store who took which serial number and when.
+
+_device_log: list[dict] = []
+
+
+# =============================================================================
 # Storage Functions
 # =============================================================================
 
@@ -158,3 +167,38 @@ def save_transaction(
 def get_transactions() -> list[dict]:
     """Return a copy of all recorded transactions."""
     return list(_transactions)
+
+
+# =============================================================================
+# Device Storage Functions
+# =============================================================================
+
+def device_already_taken(serial_number: str) -> bool:
+    """Return True if this serial number has already been logged as taken."""
+    return any(d["serial_number"] == serial_number for d in _device_log)
+
+
+def save_device_transaction(
+    serial_number: str,
+    model: str,
+    given_to: str,
+    notes: str = "",
+    recorded_by: str = "system",
+) -> dict:
+    """Record a device taken from own stock and return the saved entry."""
+    record = {
+        "id": str(uuid.uuid4()),
+        "serial_number": serial_number,
+        "model": model,
+        "given_to": given_to,
+        "notes": notes,
+        "recorded_by": recorded_by,
+        "created_at": datetime.now(),
+    }
+    _device_log.append(record)
+    return record
+
+
+def get_device_log() -> list[dict]:
+    """Return a copy of all device transactions."""
+    return list(_device_log)

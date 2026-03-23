@@ -103,6 +103,47 @@ def get_stock_level(category: str, subtype: str = "") -> dict:
     }
 
 
+def take_device(
+    serial_number: str,
+    model: str,
+    given_to: str,
+    notes: str = "",
+    recorded_by: str = "stock_controller",
+) -> dict:
+    """
+    Record a device taken from own stock.
+
+    Devices are unique items — we track the serial number, not a count.
+    This is different from give_out: there's no "how many left" check.
+    Instead we check that the same serial number isn't logged twice.
+
+    Business rule: each serial number can only be taken once.
+    If you try to log the same device again, it fails with 400.
+    """
+    serial_number = serial_number.strip()
+    given_to = given_to.strip()
+    notes = notes.strip()
+
+    if storage.device_already_taken(serial_number):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Device {serial_number} has already been logged as taken.",
+        )
+
+    return storage.save_device_transaction(
+        serial_number=serial_number,
+        model=model.strip(),
+        given_to=given_to,
+        notes=notes,
+        recorded_by=recorded_by,
+    )
+
+
+def get_device_log() -> list[dict]:
+    """Return all recorded device transactions."""
+    return storage.get_device_log()
+
+
 def get_stock_levels_for_subtypes(category: str, subtypes: list) -> list[dict]:
     """
     Return stock levels for every subtype in a category.
