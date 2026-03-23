@@ -68,10 +68,9 @@ def get_all_charger_stock():
 
     Returns a list — one entry per type. Useful for the dashboard.
     """
-    return [
-        stock_service.get_stock_level(ItemCategory.CHARGER, ChargerType.TYPE_C),
-        stock_service.get_stock_level(ItemCategory.CHARGER, ChargerType.MICRO),
-    ]
+    return stock_service.get_stock_levels_for_subtypes(
+        ItemCategory.CHARGER, list(ChargerType)
+    )
 
 
 @router.get("/stock/{charger_type}")

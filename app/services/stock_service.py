@@ -101,3 +101,16 @@ def get_stock_level(category: str, subtype: str = "") -> dict:
         "is_low": record["quantity"] <= reorder_level,
         "last_updated": record["last_updated"],
     }
+
+
+def get_stock_levels_for_subtypes(category: str, subtypes: list) -> list[dict]:
+    """
+    Return stock levels for every subtype in a category.
+
+    Used by routes that need to show all variants at once — all charger types,
+    all cleaning products, etc. Keeps route files free of repeated loops.
+
+    Before this existed, chargers.py and cleaning.py each listed every subtype
+    manually. Same pattern, different values. DRY: one function, used in both.
+    """
+    return [get_stock_level(category, subtype) for subtype in subtypes]

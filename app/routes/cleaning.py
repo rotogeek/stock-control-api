@@ -13,8 +13,8 @@ Four distinct products (razor, brush, mr_min, label_remover) each tracked
 separately. The route extracts the product type from the request and passes
 it as 'subtype' into the service.
 
-If you notice this looks almost identical to chargers.py — that's the point.
-Commit 3 will extract the repeated loop into a shared service method.
+The repeated loop from GET /stock is extracted into get_stock_levels_for_subtypes
+in the service layer — so adding a new product type here is one line, not four.
 """
 
 from fastapi import APIRouter
@@ -69,12 +69,9 @@ def get_all_cleaning_stock():
 
     Returns a list — one entry per product. Same shape as chargers GET /stock.
     """
-    return [
-        stock_service.get_stock_level(ItemCategory.CLEANING_PRODUCT, CleaningProduct.RAZOR),
-        stock_service.get_stock_level(ItemCategory.CLEANING_PRODUCT, CleaningProduct.BRUSH),
-        stock_service.get_stock_level(ItemCategory.CLEANING_PRODUCT, CleaningProduct.MR_MIN),
-        stock_service.get_stock_level(ItemCategory.CLEANING_PRODUCT, CleaningProduct.LABEL_REMOVER),
-    ]
+    return stock_service.get_stock_levels_for_subtypes(
+        ItemCategory.CLEANING_PRODUCT, list(CleaningProduct)
+    )
 
 
 @router.get("/stock/{product_type}")
