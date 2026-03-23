@@ -15,6 +15,7 @@ import uuid
 from datetime import datetime
 
 from app.models.Inventory import (
+    BatteryStatus,
     ChargerType,
     CleaningProduct,
     ItemCategory,
@@ -64,6 +65,22 @@ _reorder_levels: dict[tuple, int] = {
 # =============================================================================
 
 _transactions: list[dict] = []
+
+
+# =============================================================================
+# Battery Levels — how many batteries are in each charging stage
+# =============================================================================
+# Unlike other stock, battery "updates" are SET operations, not add/subtract.
+# "10 batteries charging" replaces whatever was there before.
+# We also keep a log of every update so the history is preserved.
+
+_battery_levels: dict[str, dict] = {
+    BatteryStatus.CHARGING: {"quantity": 0, "last_updated": datetime.now()},
+    BatteryStatus.READY:    {"quantity": 0, "last_updated": datetime.now()},
+    BatteryStatus.IN_USE:   {"quantity": 0, "last_updated": datetime.now()},
+}
+
+_battery_log: list[dict] = []
 
 
 # =============================================================================
@@ -202,3 +219,44 @@ def save_device_transaction(
 def get_device_log() -> list[dict]:
     """Return a copy of all device transactions."""
     return list(_device_log)
+
+
+# =============================================================================
+# Battery Storage Functions
+# =============================================================================
+
+def set_battery_level(status: str, quantity: int) -> None:
+    """Overwrite the quantity for one battery status stage."""
+    _battery_levels[status] = {"quantity": quantity, "last_updated": datetime.now()}
+
+
+def get_battery_level(status: str) -> dict:
+    """Return the current quantity for one battery status stage."""
+    return _battery_levels.get(status, {"quantity": 0, "last_updated": datetime.now()})
+
+
+def get_all_battery_levels() -> list[dict]:
+    """Return current quantities for all three battery stages."""
+    return [
+        {"status": status, **record}
+        for status, record in _battery_levels.items()
+    ]
+
+
+def save_battery_update(
+    status: str,
+    quantity: int,
+    notes: str = "",
+    recorded_by: str = "system",
+) -> dict:
+    """Record a battery status update and return the saved entry."""
+    record = {
+        "id": str(uuid.uuid4()),
+        "status": status,
+        "quantity": quantity,
+        "notes": notes,
+        "recorded_by": recorded_by,
+        "created_at": datetime.now(),
+    }
+    _battery_log.append(record)
+    return record

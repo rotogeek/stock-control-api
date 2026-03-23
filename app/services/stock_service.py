@@ -144,6 +144,37 @@ def get_device_log() -> list[dict]:
     return storage.get_device_log()
 
 
+def update_battery_status(
+    status: str,
+    quantity: int,
+    notes: str = "",
+    recorded_by: str = "stock_controller",
+) -> dict:
+    """
+    Set how many batteries are in a given charging stage.
+
+    This is a SET, not an add. "10 batteries charging" means the count
+    IS 10 now — not that 10 more were added. This reflects physical reality:
+    you look at the rack and count what's there.
+
+    All three stages are independent — updating "charging" doesn't affect
+    "ready" or "in_use".
+    """
+    notes = notes.strip()
+    storage.set_battery_level(status, quantity)
+    return storage.save_battery_update(
+        status=status,
+        quantity=quantity,
+        notes=notes,
+        recorded_by=recorded_by,
+    )
+
+
+def get_battery_levels() -> list[dict]:
+    """Return current counts for all three battery stages."""
+    return storage.get_all_battery_levels()
+
+
 def get_stock_levels_for_subtypes(category: str, subtypes: list) -> list[dict]:
     """
     Return stock levels for every subtype in a category.
