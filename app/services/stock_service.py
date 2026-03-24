@@ -219,9 +219,12 @@ def get_dashboard() -> dict:
         for b in storage.get_all_battery_levels()
     ]
 
+    low_stock_alerts = [item for item in stock_levels if item["is_low"] and item["reorder_level"] > 0]
+
     return {
         "stock_levels": stock_levels,
         "batteries": batteries,
+        "low_stock_alerts": low_stock_alerts,
         "total_items_tracked": len(stock_levels),
         "total_units_in_stock": total_units,
         "low_stock_count": low_count,
