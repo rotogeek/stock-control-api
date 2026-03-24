@@ -305,9 +305,10 @@ class DashboardResponse(BaseModel):
     """
     stock_levels: list[StockLevel]
     batteries: list[BatteryStockLevel]
-    total_items_tracked: int       # Number of distinct line items (e.g. 9)
-    total_units_in_stock: int      # Sum of all quantities (e.g. 342)
-    low_stock_count: int           # How many items are currently low
+    low_stock_alerts: list[StockLevel]  # Items currently at or below reorder level
+    total_items_tracked: int            # Number of distinct line items (e.g. 9)
+    total_units_in_stock: int           # Sum of all quantities (e.g. 342)
+    low_stock_count: int                # How many items are currently low
     last_checked: datetime
 
 
