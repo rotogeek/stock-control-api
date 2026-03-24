@@ -142,6 +142,14 @@ def set_reorder_level(category: str, subtype: str = "", level: int = 0) -> None:
     _reorder_levels[key] = level
 
 
+def get_all_reorder_levels() -> list[dict]:
+    """Return all reorder thresholds as a list of flat records."""
+    return [
+        {"category": category, "subtype": subtype, "reorder_level": level}
+        for (category, subtype), level in _reorder_levels.items()
+    ]
+
+
 def get_all_stock() -> list[dict]:
     """Return every stock entry as a list of flat records."""
     result = []
