@@ -93,6 +93,16 @@ _device_log: list[dict] = []
 
 
 # =============================================================================
+# Alert Log — items that have dropped below reorder level
+# =============================================================================
+# A new entry is written every time a give-out causes stock to hit or cross
+# the reorder threshold. This gives a historical record of when alerts fired.
+# To see what is CURRENTLY low, use get_all_stock() and filter by is_low.
+
+_alerts: list[dict] = []
+
+
+# =============================================================================
 # Storage Functions
 # =============================================================================
 
@@ -148,6 +158,30 @@ def get_all_reorder_levels() -> list[dict]:
         {"category": category, "subtype": subtype, "reorder_level": level}
         for (category, subtype), level in _reorder_levels.items()
     ]
+
+
+def save_alert(category: str, subtype: str, current_quantity: int, reorder_level: int) -> dict:
+    """Record that an item has dropped to or below its reorder level."""
+    alert = {
+        "id": str(uuid.uuid4()),
+        "category": category,
+        "subtype": subtype,
+        "current_quantity": current_quantity,
+        "reorder_level": reorder_level,
+        "message": (
+            f"{category.replace('_', ' ').title()}"
+            + (f" ({subtype})" if subtype else "")
+            + f" is low — {current_quantity} remaining (reorder at {reorder_level})"
+        ),
+        "created_at": datetime.now(),
+    }
+    _alerts.append(alert)
+    return alert
+
+
+def get_alert_log() -> list[dict]:
+    """Return a copy of every alert ever fired."""
+    return list(_alerts)
 
 
 def get_all_stock() -> list[dict]:
