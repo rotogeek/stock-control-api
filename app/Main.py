@@ -34,24 +34,27 @@ app = FastAPI(
 
 
 # =============================================================================
-# Health Check
-# =============================================================================
-# Every production API has this. Monitoring systems ping it to confirm
-# the service is alive. If this stops responding, alerts fire.
-
-# =============================================================================
 # Register Routers
 # =============================================================================
-# Each router is its own file. Adding a category = one line here.
+# Every route in this API lives under /api/... — consistent prefix throughout.
+# To add a new category: create app/routes/your_category.py with an APIRouter
+# using prefix="/api/your-category", then add it to this list. One line.
 
-app.include_router(till_rolls.router)
-app.include_router(chargers.router)
-app.include_router(cleaning.router)
-app.include_router(sim_cards.router)
-app.include_router(stickers.router)
-app.include_router(devices.router)
-app.include_router(batteries.router)
-app.include_router(dashboard.router)
+_routers = [
+    # Stock categories — all under /api/<category-name>/
+    till_rolls.router,
+    chargers.router,
+    cleaning.router,
+    sim_cards.router,
+    stickers.router,
+    devices.router,
+    batteries.router,
+    # Aggregation & reporting — all under /api/stock/
+    dashboard.router,
+]
+
+for _router in _routers:
+    app.include_router(_router)
 
 
 @app.get("/health")
