@@ -284,11 +284,15 @@ class DashboardResponse(BaseModel):
     stock_levels covers all counted items (till rolls, chargers, SIM cards, etc.)
     Each entry shows quantity, reorder threshold, and whether it is low.
 
-    total_items_tracked is the number of distinct stock line items.
-    last_checked is the moment this snapshot was generated.
+    total_items_tracked: number of distinct stock line items being tracked.
+    total_units_in_stock: sum of all quantities across every line item.
+    low_stock_count: how many line items are currently below reorder level.
+    last_checked: moment this snapshot was generated.
     """
     stock_levels: list[StockLevel]
-    total_items_tracked: int
+    total_items_tracked: int       # Number of distinct line items (e.g. 9)
+    total_units_in_stock: int      # Sum of all quantities (e.g. 342)
+    low_stock_count: int           # How many items are currently low
     last_checked: datetime
 
 

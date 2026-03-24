@@ -203,9 +203,14 @@ def get_dashboard() -> dict:
         for item in all_stock
     ]
 
+    total_units = sum(item["current_quantity"] for item in stock_levels)
+    low_count = sum(1 for item in stock_levels if item["is_low"])
+
     return {
         "stock_levels": stock_levels,
         "total_items_tracked": len(stock_levels),
+        "total_units_in_stock": total_units,
+        "low_stock_count": low_count,
         "last_checked": datetime.now(),
     }
 
