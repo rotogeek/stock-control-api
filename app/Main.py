@@ -18,7 +18,7 @@ Once running, visit http://localhost:8000/docs for interactive API docs.
 
 from fastapi import FastAPI
 from app import Config as config
-from app.routes import batteries, chargers, cleaning, devices, sim_cards, stickers, till_rolls
+from app.routes import batteries, chargers, cleaning, dashboard, devices, sim_cards, stickers, till_rolls
 
 # =============================================================================
 # Create the Application
@@ -51,6 +51,7 @@ app.include_router(sim_cards.router)
 app.include_router(stickers.router)
 app.include_router(devices.router)
 app.include_router(batteries.router)
+app.include_router(dashboard.router)
 
 
 @app.get("/health")
