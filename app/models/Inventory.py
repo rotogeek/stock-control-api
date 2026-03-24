@@ -274,6 +274,25 @@ class AlertNotification(BaseModel):
 
 
 # =============================================================================
+# Dashboard Model
+# =============================================================================
+
+class DashboardResponse(BaseModel):
+    """
+    Full stock overview — everything the stock controller needs at a glance.
+
+    stock_levels covers all counted items (till rolls, chargers, SIM cards, etc.)
+    Each entry shows quantity, reorder threshold, and whether it is low.
+
+    total_items_tracked is the number of distinct stock line items.
+    last_checked is the moment this snapshot was generated.
+    """
+    stock_levels: list[StockLevel]
+    total_items_tracked: int
+    last_checked: datetime
+
+
+# =============================================================================
 # Configuration Model
 # =============================================================================
 

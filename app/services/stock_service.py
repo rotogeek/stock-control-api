@@ -14,6 +14,8 @@ This is where the actual thinking happens. If a business rule changes
 (e.g. "allow small overdrafts for managers"), you change it HERE only.
 """
 
+from datetime import datetime
+
 from fastapi import HTTPException
 
 from app.models.Inventory import MovementType
@@ -173,6 +175,39 @@ def update_battery_status(
 def get_battery_levels() -> list[dict]:
     """Return current counts for all three battery stages."""
     return storage.get_all_battery_levels()
+
+
+def get_dashboard() -> dict:
+    """
+    Aggregate all stock levels into a single dashboard view.
+
+    Pulls every entry from the stock store, enriches each with its reorder
+    level and is_low flag, and returns them alongside a total count and a
+    timestamp showing when this snapshot was taken.
+
+    WHY A SEPARATE FUNCTION:
+    The route shouldn't know about storage. The service owns the aggregation
+    logic so the route stays thin: call service, return result.
+    """
+    all_stock = storage.get_all_stock()
+
+    stock_levels = [
+        {
+            "category": item["category"],
+            "subtype": item["subtype"],
+            "current_quantity": item["quantity"],
+            "reorder_level": item["reorder_level"],
+            "is_low": item["quantity"] <= item["reorder_level"],
+            "last_updated": item["last_updated"],
+        }
+        for item in all_stock
+    ]
+
+    return {
+        "stock_levels": stock_levels,
+        "total_items_tracked": len(stock_levels),
+        "last_checked": datetime.now(),
+    }
 
 
 def get_stock_levels_for_subtypes(category: str, subtypes: list) -> list[dict]:
