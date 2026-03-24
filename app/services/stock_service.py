@@ -225,6 +225,26 @@ def get_dashboard() -> dict:
     }
 
 
+def get_all_reorder_levels() -> list[dict]:
+    """Return all configured reorder thresholds."""
+    return storage.get_all_reorder_levels()
+
+
+def update_reorder_level(category: str, subtype: str, level: int) -> dict:
+    """
+    Set the reorder threshold for one stock item.
+
+    When stock drops to or below this number after a give-out, an alert fires.
+    Setting level to 0 effectively disables alerting for that item.
+    """
+    storage.set_reorder_level(category, subtype, level)
+    return {
+        "category": category,
+        "subtype": subtype,
+        "reorder_level": level,
+    }
+
+
 def get_stock_levels_for_subtypes(category: str, subtypes: list) -> list[dict]:
     """
     Return stock levels for every subtype in a category.
