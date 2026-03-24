@@ -277,12 +277,26 @@ class AlertNotification(BaseModel):
 # Dashboard Model
 # =============================================================================
 
+class BatteryStockLevel(BaseModel):
+    """
+    Current quantity of batteries in one charging stage, shown on the dashboard.
+
+    Batteries aren't tracked like regular stock — there's no give-out / receive
+    flow. Instead you look at the rack and record how many are in each stage.
+    We surface last_updated so the controller can see when each stage was
+    last counted.
+    """
+    status: BatteryStatus
+    quantity: int
+    last_updated: datetime
+
+
 class DashboardResponse(BaseModel):
     """
     Full stock overview — everything the stock controller needs at a glance.
 
-    stock_levels covers all counted items (till rolls, chargers, SIM cards, etc.)
-    Each entry shows quantity, reorder threshold, and whether it is low.
+    stock_levels: all counted items (till rolls, chargers, SIM cards, etc.)
+    batteries: the three charging stages with quantity and last count time.
 
     total_items_tracked: number of distinct stock line items being tracked.
     total_units_in_stock: sum of all quantities across every line item.
@@ -290,6 +304,7 @@ class DashboardResponse(BaseModel):
     last_checked: moment this snapshot was generated.
     """
     stock_levels: list[StockLevel]
+    batteries: list[BatteryStockLevel]
     total_items_tracked: int       # Number of distinct line items (e.g. 9)
     total_units_in_stock: int      # Sum of all quantities (e.g. 342)
     low_stock_count: int           # How many items are currently low

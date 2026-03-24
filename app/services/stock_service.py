@@ -206,8 +206,18 @@ def get_dashboard() -> dict:
     total_units = sum(item["current_quantity"] for item in stock_levels)
     low_count = sum(1 for item in stock_levels if item["is_low"])
 
+    batteries = [
+        {
+            "status": b["status"],
+            "quantity": b["quantity"],
+            "last_updated": b["last_updated"],
+        }
+        for b in storage.get_all_battery_levels()
+    ]
+
     return {
         "stock_levels": stock_levels,
+        "batteries": batteries,
         "total_items_tracked": len(stock_levels),
         "total_units_in_stock": total_units,
         "low_stock_count": low_count,
