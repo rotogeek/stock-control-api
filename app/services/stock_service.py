@@ -229,6 +229,23 @@ def get_dashboard() -> dict:
     }
 
 
+def get_active_alerts() -> list[dict]:
+    """
+    Return all stock items currently at or below their reorder level.
+
+    Computed live from current stock — not from the alert log. The alert log
+    records WHEN an item went low. This function answers: what is low RIGHT NOW?
+
+    Only items with a reorder_level > 0 are included. A level of 0 means
+    alerting is disabled for that item.
+    """
+    return [
+        item for item in [get_stock_level(entry["category"], entry["subtype"])
+                          for entry in storage.get_all_stock()]
+        if item["reorder_level"] > 0 and item["is_low"]
+    ]
+
+
 def get_all_reorder_levels() -> list[dict]:
     """Return all configured reorder thresholds."""
     return storage.get_all_reorder_levels()
