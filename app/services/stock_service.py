@@ -51,7 +51,11 @@ def give_out(
             ),
         )
 
-    storage.subtract_stock(category, subtype, quantity)
+    new_quantity = storage.subtract_stock(category, subtype, quantity)
+
+    reorder_level = storage.get_reorder_level(category, subtype)
+    if reorder_level > 0 and new_quantity <= reorder_level:
+        storage.save_alert(category, subtype, new_quantity, reorder_level)
 
     return storage.save_transaction(
         category=category,
