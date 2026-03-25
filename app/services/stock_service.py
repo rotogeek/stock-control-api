@@ -43,10 +43,13 @@ def give_out(
     current = storage.get_stock(category, subtype)
 
     if quantity > current:
+        item_name = category.replace("_", " ")
+        if subtype:
+            item_name = f"{subtype.replace('_', ' ')} {item_name}"
         raise HTTPException(
             status_code=400,
             detail=(
-                f"Cannot give out {quantity} {category.replace('_', ' ')}(s). "
+                f"Cannot give out {quantity} {item_name}(s). "
                 f"Only {current} currently in stock."
             ),
         )
