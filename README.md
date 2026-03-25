@@ -239,6 +239,60 @@ GET /api/batteries/status
 
 ---
 
+### Transaction History
+
+#### List all stock movements
+```
+GET /api/transactions
+```
+
+Returns every give-out and delivery across all categories, paginated.
+
+**Query parameters (all optional):**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `date` | `YYYY-MM-DD` | Only movements on that day |
+| `category` | string | e.g. `charger`, `till_roll`, `sim_card` |
+| `given_to` | string | Case-insensitive name search |
+| `page` | int | Page number (default: 1) |
+| `per_page` | int | Results per page (default: 20, max: 100) |
+
+**Examples:**
+```
+GET /api/transactions
+GET /api/transactions?date=2026-03-25
+GET /api/transactions?category=charger&given_to=thabo
+GET /api/transactions?date=2026-03-25&page=2&per_page=10
+```
+
+**Response (200):**
+```json
+{
+  "transactions": [
+    {
+      "id": "abc-123",
+      "category": "charger",
+      "subtype": "type_c",
+      "movement_type": "used",
+      "quantity": 2,
+      "given_to": "Thabo",
+      "notes": "",
+      "recorded_by": "stock_controller",
+      "created_at": "2026-03-25T09:15:00"
+    }
+  ],
+  "total": 45,
+  "page": 1,
+  "per_page": 20,
+  "pages": 3
+}
+```
+
+The `X-Total-Count` response header also contains the total number of matching records.
+
+---
+
 ### System
 
 #### Health check
