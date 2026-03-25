@@ -311,11 +311,20 @@ def get_transactions(
         from datetime import date as date_type
         try:
             filter_date = date_type.fromisoformat(date)
-            transactions = [t for t in transactions if t["created_at"].date() == filter_date]
         except ValueError:
-            pass  # Invalid date string — return unfiltered rather than crashing
+            raise StockAPIError(
+                error="invalid_date",
+                detail=f"Invalid date format: '{date}'. Use YYYY-MM-DD (e.g. 2026-03-25).",
+            )
+        transactions = [t for t in transactions if t["created_at"].date() == filter_date]
 
     if category:
+        valid_categories = {item.value for item in ItemCategory}
+        if category not in valid_categories:
+            raise StockAPIError(
+                error="invalid_category",
+                detail=f"Unknown category: '{category}'. Valid values: {sorted(valid_categories)}.",
+            )
         transactions = [t for t in transactions if t["category"] == category]
 
     if given_to:
