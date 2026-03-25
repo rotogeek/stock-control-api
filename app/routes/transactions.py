@@ -31,13 +31,29 @@ def list_transactions(
         description="Filter by date (YYYY-MM-DD). Returns all movements on that day.",
         example="2026-03-25",
     ),
+    category: str | None = Query(
+        default=None,
+        description="Filter by item category (e.g. 'charger', 'till_roll', 'sim_card').",
+        example="charger",
+    ),
+    given_to: str | None = Query(
+        default=None,
+        description="Filter by recipient name (case-insensitive, partial match).",
+        example="thabo",
+    ),
     page: int = Query(default=1, ge=1, description="Page number"),
     per_page: int = Query(default=20, ge=1, le=100, description="Results per page"),
 ):
     """
-    List all stock movements with optional date filtering and pagination.
+    List all stock movements with optional filters and pagination.
 
     Returns every give-out and delivery across all categories.
-    Use ?date= to see a specific day's movements.
+    Filters are combinable — e.g. ?category=charger&given_to=thabo&date=2026-03-25
     """
-    return service.get_transactions(date=date, page=page, per_page=per_page)
+    return service.get_transactions(
+        date=date,
+        category=category,
+        given_to=given_to,
+        page=page,
+        per_page=per_page,
+    )
