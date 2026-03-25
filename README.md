@@ -239,6 +239,77 @@ GET /api/batteries/status
 
 ---
 
+### Daily Reports
+
+#### Full daily report
+```
+GET /api/reports/daily
+GET /api/reports/daily?date=2026-03-25
+```
+
+Defaults to today. Pass `?date=` for historical reports.
+
+**Response (200):**
+```json
+{
+  "date": "2026-03-25",
+  "summary": {
+    "total_items_given_out": 23,
+    "total_items_received": 100,
+    "categories_used": 5
+  },
+  "usage_by_item": [
+    {
+      "category": "till_roll",
+      "subtype": "",
+      "used_today": 8,
+      "received_today": 0,
+      "remaining": 37
+    },
+    {
+      "category": "charger",
+      "subtype": "type_c",
+      "used_today": 5,
+      "received_today": 50,
+      "remaining": 67
+    }
+  ],
+  "usage_by_person": [
+    {
+      "name": "Sipho",
+      "items": [{"category": "till_roll", "subtype": "", "quantity": 5}]
+    },
+    {
+      "name": "Thabo",
+      "items": [{"category": "charger", "subtype": "type_c", "quantity": 3}]
+    }
+  ],
+  "low_stock_alerts": [
+    {
+      "category": "sticker",
+      "subtype": "",
+      "current_quantity": 4,
+      "reorder_level": 20,
+      "is_low": true,
+      "last_updated": "2026-03-25T14:00:00"
+    }
+  ]
+}
+```
+
+Only items with activity (given out or received) appear in `usage_by_item`.
+Only recipients with give-outs appear in `usage_by_person`.
+
+#### Low-stock warnings only
+```
+GET /api/reports/daily/low-stock
+```
+
+Returns just the low-stock alerts — items currently at or below their reorder level.
+Shortcut for quick checks without loading the full report.
+
+---
+
 ### Transaction History
 
 #### List all stock movements
