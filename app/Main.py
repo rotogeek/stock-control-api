@@ -16,8 +16,10 @@ HOW TO RUN:
 Once running, visit http://localhost:8000/docs for interactive API docs.
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from app import Config as config
+from app.models.errors import StockAPIError
 from app.routes import alerts, batteries, chargers, cleaning, dashboard, devices, reports, settings, sim_cards, stickers, till_rolls, transactions
 
 # =============================================================================
@@ -63,6 +65,24 @@ _routers = [
 
 for _router in _routers:
     app.include_router(_router)
+
+
+# =============================================================================
+# Error Handlers
+# =============================================================================
+# Every StockAPIError raised anywhere in the app is caught here and returned
+# in the consistent format: {"error": "...", "detail": "...", "status_code": ...}
+
+@app.exception_handler(StockAPIError)
+async def stock_error_handler(request: Request, exc: StockAPIError):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": exc.error,
+            "detail": exc.detail,
+            "status_code": exc.status_code,
+        },
+    )
 
 
 @app.get("/health")

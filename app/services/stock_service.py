@@ -16,8 +16,7 @@ This is where the actual thinking happens. If a business rule changes
 
 from datetime import datetime
 
-from fastapi import HTTPException
-
+from app.models.errors import StockAPIError
 from app.models.Inventory import ItemCategory, MovementType
 from app.storage import memory as storage
 
@@ -46,8 +45,8 @@ def give_out(
         item_name = category.replace("_", " ")
         if subtype:
             item_name = f"{subtype.replace('_', ' ')} {item_name}"
-        raise HTTPException(
-            status_code=400,
+        raise StockAPIError(
+            error="insufficient_stock",
             detail=(
                 f"Cannot give out {quantity} {item_name}(s). "
                 f"Only {current} currently in stock."
@@ -134,8 +133,8 @@ def take_device(
     notes = notes.strip()
 
     if storage.device_already_taken(serial_number):
-        raise HTTPException(
-            status_code=400,
+        raise StockAPIError(
+            error="duplicate_serial",
             detail=f"Device {serial_number} has already been logged as taken.",
         )
 
