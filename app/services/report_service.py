@@ -18,6 +18,7 @@ by person, and by alert status.
 from collections import defaultdict
 from datetime import date as date_type
 
+from app.models.errors import StockAPIError
 from app.models.Inventory import MovementType
 from app.storage import memory as storage
 
@@ -38,7 +39,13 @@ def generate_daily_report(date_str: str | None = None) -> dict:
         report_date = date_type.today()
         date_str = report_date.isoformat()
     else:
-        report_date = date_type.fromisoformat(date_str)
+        try:
+            report_date = date_type.fromisoformat(date_str)
+        except ValueError:
+            raise StockAPIError(
+                error="invalid_date",
+                detail=f"Invalid date format: '{date_str}'. Use YYYY-MM-DD (e.g. 2026-03-25).",
+            )
 
     all_transactions = storage.get_transactions()
     day_transactions = [
