@@ -18,7 +18,7 @@ Once running, visit http://localhost:8000/docs for interactive API docs.
 
 from fastapi import FastAPI
 from app import Config as config
-from app.routes import alerts, batteries, chargers, cleaning, dashboard, devices, settings, sim_cards, stickers, till_rolls, transactions
+from app.routes import alerts, batteries, chargers, cleaning, dashboard, devices, reports, settings, sim_cards, stickers, till_rolls, transactions
 
 # =============================================================================
 # Create the Application
@@ -55,6 +55,8 @@ _routers = [
     alerts.router,
     # Transaction history — /api/transactions
     transactions.router,
+    # Reports — /api/reports/
+    reports.router,
     # Configuration — all under /api/settings/
     settings.router,
 ]
