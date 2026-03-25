@@ -17,7 +17,7 @@ That's it. No returns. No adjustments. Stock goes out or comes in.
 
 from enum import Enum
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 # =============================================================================
@@ -75,13 +75,29 @@ class ItemCategory(str, Enum):
 # Request Models — What stock controllers send to the API
 # =============================================================================
 
-class StockUsedRequest(BaseModel):
+class _StripStrings(BaseModel):
+    """
+    Mixin that strips leading/trailing whitespace from all string fields.
+
+    Inherited by every request model so "  Thabo  " always becomes "Thabo"
+    before the data reaches the service layer. Prevents name-matching bugs
+    in reports (e.g. "Thabo" and " Thabo" appearing as different people).
+    """
+    @field_validator("*", mode="before")
+    @classmethod
+    def strip_strings(cls, v):
+        if isinstance(v, str):
+            return v.strip()
+        return v
+
+
+class StockUsedRequest(_StripStrings):
     """
     Record that stock was given out to someone.
-    
+
     This is the most common action. A stock controller hands items out
     and logs: what they gave, how many, and who received it.
-    
+
     Example: "Gave 2 type-c chargers to Thabo"
     """
     quantity: int = Field(
@@ -103,10 +119,10 @@ class StockUsedRequest(BaseModel):
     )
 
 
-class StockReceivedRequest(BaseModel):
+class StockReceivedRequest(_StripStrings):
     """
     Record that new stock arrived (delivery from supplier).
-    
+
     Example: "Received 100 stickers from supplier"
     """
     quantity: int = Field(
@@ -122,7 +138,7 @@ class StockReceivedRequest(BaseModel):
     )
 
 
-class ChargerUsedRequest(BaseModel):
+class ChargerUsedRequest(_StripStrings):
     """Record a charger given out — includes which type."""
     charger_type: ChargerType
     quantity: int = Field(..., gt=0, le=1000)
@@ -130,14 +146,14 @@ class ChargerUsedRequest(BaseModel):
     notes: str = Field(default="", max_length=500)
 
 
-class ChargerReceivedRequest(BaseModel):
+class ChargerReceivedRequest(_StripStrings):
     """Record chargers received from supplier."""
     charger_type: ChargerType
     quantity: int = Field(..., gt=0, le=100000)
     notes: str = Field(default="", max_length=500)
 
 
-class CleaningUsedRequest(BaseModel):
+class CleaningUsedRequest(_StripStrings):
     """Record a cleaning product given out."""
     product_type: CleaningProduct
     quantity: int = Field(..., gt=0, le=1000)
@@ -145,17 +161,17 @@ class CleaningUsedRequest(BaseModel):
     notes: str = Field(default="", max_length=500)
 
 
-class CleaningReceivedRequest(BaseModel):
+class CleaningReceivedRequest(_StripStrings):
     """Record cleaning products received from supplier."""
     product_type: CleaningProduct
     quantity: int = Field(..., gt=0, le=100000)
     notes: str = Field(default="", max_length=500)
 
 
-class DeviceUsedRequest(BaseModel):
+class DeviceUsedRequest(_StripStrings):
     """
     Record a device taken from own stock.
-    
+
     Devices are tracked individually by serial number because
     each one is unique — unlike chargers where you just count them.
     """
@@ -176,6 +192,11 @@ class BatteryUpdateRequest(BaseModel):
     status: BatteryStatus
     quantity: int = Field(..., gt=0, le=1000)
     notes: str = Field(default="", max_length=500)
+
+    @field_validator("notes", mode="before")
+    @classmethod
+    def strip_notes(cls, v):
+        return v.strip() if isinstance(v, str) else v
 
 
 # =============================================================================
