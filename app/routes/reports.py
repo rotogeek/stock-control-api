@@ -9,7 +9,7 @@ Defaults to today. Pass ?date= for historical reports.
 """
 
 from fastapi import APIRouter, Query
-from app.models.Inventory import DailyReportResponse
+from app.models.Inventory import DailyReportResponse, StockLevel
 from app.services import report_service
 
 router = APIRouter(prefix="/api/reports", tags=["Reports"])
@@ -33,3 +33,15 @@ def daily_report(
     - Low-stock alerts (items currently at or below reorder level)
     """
     return report_service.generate_daily_report(date_str=date)
+
+
+@router.get("/daily/low-stock", response_model=list[StockLevel])
+def daily_low_stock():
+    """
+    Return only the low-stock warnings section of the daily report.
+
+    Shortcut for stock controllers who just want to see what needs
+    reordering without loading the full report. Computed live from
+    current stock levels.
+    """
+    return report_service.get_low_stock_warnings()
