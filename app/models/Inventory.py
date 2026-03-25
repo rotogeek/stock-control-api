@@ -316,6 +316,56 @@ class DashboardResponse(BaseModel):
 # Configuration Model
 # =============================================================================
 
+class ReportSummary(BaseModel):
+    """Top-level numbers for the daily report."""
+    total_items_given_out: int
+    total_items_received: int
+    categories_used: int    # How many distinct item categories had activity
+
+
+class ItemUsageSummary(BaseModel):
+    """
+    One line in the daily report — what happened to a single item type today.
+
+    Only items with activity (given out or received) appear here.
+    remaining reflects current stock, not end-of-day stock.
+    """
+    category: ItemCategory
+    subtype: str = ""
+    used_today: int
+    received_today: int
+    remaining: int
+
+
+class PersonUsageItem(BaseModel):
+    """One item line in a person's daily usage breakdown."""
+    category: ItemCategory
+    subtype: str = ""
+    quantity: int
+
+
+class PersonUsage(BaseModel):
+    """All items given to one person today."""
+    name: str
+    items: list[PersonUsageItem]
+
+
+class DailyReportResponse(BaseModel):
+    """
+    Full end-of-day report.
+
+    summary: totals at a glance.
+    usage_by_item: what happened to each item type today.
+    usage_by_person: what each person received today.
+    low_stock_alerts: items currently at or below their reorder level.
+    """
+    date: str
+    summary: ReportSummary
+    usage_by_item: list[ItemUsageSummary]
+    usage_by_person: list[PersonUsage]
+    low_stock_alerts: list["StockLevel"]
+
+
 class TransactionResponse(BaseModel):
     """
     A single stock movement in the transaction history.
