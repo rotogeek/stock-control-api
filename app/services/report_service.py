@@ -95,6 +95,17 @@ def generate_daily_report(date_str: str | None = None) -> dict:
     }
 
 
+def get_low_stock_warnings() -> list[dict]:
+    """
+    Return items currently at or below their reorder level.
+
+    Used by GET /api/reports/daily/low-stock — same data as the
+    low_stock_alerts section of the full daily report, exposed
+    as a standalone endpoint for quick checks.
+    """
+    return _build_low_stock_alerts(storage.get_all_stock())
+
+
 def _build_person_breakdown(day_transactions: list[dict]) -> list[dict]:
     """
     Group give-outs by recipient.
