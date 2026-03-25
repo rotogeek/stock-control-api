@@ -316,6 +316,38 @@ class DashboardResponse(BaseModel):
 # Configuration Model
 # =============================================================================
 
+class TransactionResponse(BaseModel):
+    """
+    A single stock movement in the transaction history.
+
+    Covers every give-out and receive across all categories, including
+    device take-outs (category=own_stock_device, quantity=1).
+    subtype is empty for simple items, populated for chargers and cleaning products.
+    """
+    id: str
+    category: ItemCategory
+    subtype: str = ""
+    movement_type: MovementType
+    quantity: int
+    given_to: str = ""
+    notes: str = ""
+    recorded_by: str
+    created_at: datetime
+
+
+class TransactionListResponse(BaseModel):
+    """Paginated transaction list returned by GET /api/transactions."""
+    transactions: list[TransactionResponse]
+    total: int        # Total matching records (before pagination)
+    page: int
+    per_page: int
+    pages: int        # Total number of pages
+
+
+# =============================================================================
+# Configuration Model
+# =============================================================================
+
 class ReorderLevelUpdate(BaseModel):
     """
     Set the reorder threshold for an item.

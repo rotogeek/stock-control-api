@@ -286,6 +286,54 @@ def update_reorder_level(category: str, subtype: str, level: int) -> dict:
     }
 
 
+def get_transactions(
+    date: str | None = None,
+    category: str | None = None,
+    given_to: str | None = None,
+    page: int = 1,
+    per_page: int = 20,
+) -> dict:
+    """
+    Return a filtered, paginated list of stock movements.
+
+    Filters applied in order: date → category → given_to.
+    Pagination is applied last, after all filtering.
+
+    date format: YYYY-MM-DD — matches on created_at date only (not time).
+    category: must match an ItemCategory value exactly (e.g. "charger").
+    given_to: case-insensitive substring match so "thabo" finds "Thabo".
+    """
+    transactions = storage.get_transactions()
+
+    if date:
+        from datetime import date as date_type
+        try:
+            filter_date = date_type.fromisoformat(date)
+            transactions = [t for t in transactions if t["created_at"].date() == filter_date]
+        except ValueError:
+            pass  # Invalid date string — return unfiltered rather than crashing
+
+    if category:
+        transactions = [t for t in transactions if t["category"] == category]
+
+    if given_to:
+        needle = given_to.strip().lower()
+        transactions = [t for t in transactions if needle in t["given_to"].lower()]
+
+    total = len(transactions)
+    pages = max(1, -(-total // per_page))  # Ceiling division
+    offset = (page - 1) * per_page
+    page_slice = transactions[offset: offset + per_page]
+
+    return {
+        "transactions": page_slice,
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "pages": pages,
+    }
+
+
 def get_stock_levels_for_subtypes(category: str, subtypes: list) -> list[dict]:
     """
     Return stock levels for every subtype in a category.
