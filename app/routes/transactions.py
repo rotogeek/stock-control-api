@@ -17,7 +17,7 @@ FILTERS (all optional, combinable):
   ?page=1&per_page=20    — pagination (defaults shown)
 """
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Response
 from app.models.Inventory import TransactionListResponse
 from app.services import stock_service as service
 
@@ -26,6 +26,7 @@ router = APIRouter(prefix="/api/transactions", tags=["Transactions"])
 
 @router.get("", response_model=TransactionListResponse)
 def list_transactions(
+    response: Response,
     date: str | None = Query(
         default=None,
         description="Filter by date (YYYY-MM-DD). Returns all movements on that day.",
@@ -42,18 +43,24 @@ def list_transactions(
         example="thabo",
     ),
     page: int = Query(default=1, ge=1, description="Page number"),
-    per_page: int = Query(default=20, ge=1, le=100, description="Results per page"),
+    per_page: int = Query(default=20, ge=1, le=100, description="Results per page (max 100)"),
 ):
     """
     List all stock movements with optional filters and pagination.
 
     Returns every give-out and delivery across all categories.
     Filters are combinable — e.g. ?category=charger&given_to=thabo&date=2026-03-25
+
+    Pagination metadata is in both the response body and the X-Total-Count header.
     """
-    return service.get_transactions(
+    result = service.get_transactions(
         date=date,
         category=category,
         given_to=given_to,
         page=page,
         per_page=per_page,
     )
+    # Expose total record count in a header — standard REST pagination practice.
+    # Clients can read this without parsing the body to know if there are more pages.
+    response.headers["X-Total-Count"] = str(result["total"])
+    return result
