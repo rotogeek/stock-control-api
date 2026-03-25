@@ -79,38 +79,8 @@ def generate_daily_report(date_str: str | None = None) -> dict:
     total_received = sum(item_received.values())
     categories_used = len({cat for (cat, _) in item_used if item_used[(cat, _)] > 0})
 
-    # --- usage_by_person ---
-    # Group give-outs by recipient, then by (category, subtype)
-    person_items: dict[str, dict[tuple, int]] = defaultdict(lambda: defaultdict(int))
-    for t in day_transactions:
-        if t["movement_type"] == MovementType.USED and t["given_to"]:
-            key = (t["category"], t["subtype"])
-            person_items[t["given_to"]][key] += t["quantity"]
-
-    usage_by_person = [
-        {
-            "name": person,
-            "items": [
-                {"category": cat, "subtype": sub, "quantity": qty}
-                for (cat, sub), qty in sorted(items.items(), key=lambda x: x[0])
-            ],
-        }
-        for person, items in sorted(person_items.items())
-    ]
-
-    # --- low_stock_alerts ---
-    low_stock_alerts = [
-        {
-            "category": item["category"],
-            "subtype": item["subtype"],
-            "current_quantity": item["quantity"],
-            "reorder_level": item["reorder_level"],
-            "is_low": True,
-            "last_updated": item["last_updated"],
-        }
-        for item in all_stock
-        if item["reorder_level"] > 0 and item["quantity"] <= item["reorder_level"]
-    ]
+    usage_by_person = _build_person_breakdown(day_transactions)
+    low_stock_alerts = _build_low_stock_alerts(all_stock)
 
     return {
         "date": date_str,
@@ -123,3 +93,54 @@ def generate_daily_report(date_str: str | None = None) -> dict:
         "usage_by_person": usage_by_person,
         "low_stock_alerts": low_stock_alerts,
     }
+
+
+def _build_person_breakdown(day_transactions: list[dict]) -> list[dict]:
+    """
+    Group give-outs by recipient.
+
+    Returns one entry per person, each containing a list of items they
+    received today. Sorted alphabetically by name for consistent output.
+
+    Only give-outs (movement_type=used) are included — deliveries have no
+    recipient so they don't belong in the per-person view.
+    """
+    person_items: dict[str, dict[tuple, int]] = defaultdict(lambda: defaultdict(int))
+    for t in day_transactions:
+        if t["movement_type"] == MovementType.USED and t["given_to"]:
+            key = (t["category"], t["subtype"])
+            person_items[t["given_to"]][key] += t["quantity"]
+
+    return [
+        {
+            "name": person,
+            "items": [
+                {"category": cat, "subtype": sub, "quantity": qty}
+                for (cat, sub), qty in sorted(items.items(), key=lambda x: x[0])
+            ],
+        }
+        for person, items in sorted(person_items.items())
+    ]
+
+
+def _build_low_stock_alerts(all_stock: list[dict]) -> list[dict]:
+    """
+    Return all items currently at or below their reorder level.
+
+    Computed from live stock — not from the alert event log. This answers
+    "what is low right now?" rather than "when did it go low?"
+
+    Items with reorder_level=0 are excluded (alerting disabled for them).
+    """
+    return [
+        {
+            "category": item["category"],
+            "subtype": item["subtype"],
+            "current_quantity": item["quantity"],
+            "reorder_level": item["reorder_level"],
+            "is_low": True,
+            "last_updated": item["last_updated"],
+        }
+        for item in all_stock
+        if item["reorder_level"] > 0 and item["quantity"] <= item["reorder_level"]
+    ]
