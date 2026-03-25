@@ -18,7 +18,7 @@ from datetime import datetime
 
 from fastapi import HTTPException
 
-from app.models.Inventory import MovementType
+from app.models.Inventory import ItemCategory, MovementType
 from app.storage import memory as storage
 
 
@@ -136,13 +136,30 @@ def take_device(
             detail=f"Device {serial_number} has already been logged as taken.",
         )
 
-    return storage.save_device_transaction(
+    result = storage.save_device_transaction(
         serial_number=serial_number,
         model=model.strip(),
         given_to=given_to,
         notes=notes,
         recorded_by=recorded_by,
     )
+
+    # Also record in the unified transaction log so device take-outs appear
+    # alongside all other movements when querying /api/transactions.
+    tx_notes = f"Serial: {serial_number} | Model: {model.strip()}"
+    if notes:
+        tx_notes += f" | {notes}"
+    storage.save_transaction(
+        category=ItemCategory.OWN_STOCK_DEVICE,
+        subtype="",
+        movement_type=MovementType.USED,
+        quantity=1,
+        given_to=given_to,
+        notes=tx_notes,
+        recorded_by=recorded_by,
+    )
+
+    return result
 
 
 def get_device_log() -> list[dict]:
