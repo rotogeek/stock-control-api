@@ -22,8 +22,7 @@ Simple items (till rolls, SIM cards, stickers) use no subtype:
 
 from fastapi import APIRouter, Query
 
-from app.models.errors import StockAPIError
-from app.models.Inventory import ItemCategory, ReorderLevelUpdate
+from app.models.Inventory import ReorderLevelUpdate
 from app.services import stock_service
 
 router = APIRouter(prefix="/api/settings", tags=["Settings"])
@@ -48,10 +47,4 @@ def update_reorder_level(
     Use subtype= for items with variants: ?subtype=type_c, ?subtype=razor, etc.
     Set reorder_level to 0 to disable alerting for that item.
     """
-    valid_categories = {item.value for item in ItemCategory}
-    if category not in valid_categories:
-        raise StockAPIError(
-            error="invalid_category",
-            detail=f"Unknown category: '{category}'. Valid values: {sorted(valid_categories)}.",
-        )
     return stock_service.update_reorder_level(category, subtype, request.reorder_level)
