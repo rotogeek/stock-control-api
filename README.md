@@ -364,6 +364,39 @@ The `X-Total-Count` response header also contains the total number of matching r
 
 ---
 
+### Alerts
+
+#### Items currently below reorder level
+```
+GET /api/alerts
+```
+
+Returns all items where `current_quantity <= reorder_level`. Empty list means everything is adequately stocked.
+
+---
+
+### Settings
+
+#### View all reorder thresholds
+```
+GET /api/settings/reorder-levels
+```
+
+#### Update a reorder threshold
+```
+PUT /api/settings/reorder-levels/{category}
+PUT /api/settings/reorder-levels/{category}?subtype=type_c
+```
+```json
+{"reorder_level": 10}
+```
+
+Set `reorder_level` to `0` to disable alerting for that item.
+
+Use `?subtype=` for chargers (`type_c`, `micro`) and cleaning products (`razor`, `brush`, `mr_min`, `label_remover`).
+
+---
+
 ### System
 
 #### Health check
@@ -374,16 +407,50 @@ GET /health
 {"status": "healthy", "service": "stock-control-api", "version": "0.1.0", "environment": "development"}
 ```
 
+#### Detailed system status
+```
+GET /api/health/detailed
+```
+```json
+{
+  "status": "healthy",
+  "version": "0.1.0",
+  "uptime_seconds": 3600,
+  "total_transactions_recorded": 142,
+  "active_low_stock_alerts": 2,
+  "started_at": "2026-03-26T08:00:00"
+}
+```
+
+---
+
+## Request Tracing
+
+Every response includes an `X-Request-ID` header (e.g. `req-a1b2c3d4`).
+Every request is logged to the console:
+```
+2026-03-26 09:15:23 | POST   /api/till-rolls/use | 200 | 45ms | req-a1b2c3d4
+```
+
 ---
 
 ## Error Responses
 
-**Not enough stock (400):**
+All errors return a consistent shape:
+
 ```json
-{"detail": "Cannot give out 50 till roll(s). Only 12 currently in stock."}
+{
+  "error": "insufficient_stock",
+  "detail": "Cannot give out 50 till roll(s). Only 12 currently in stock.",
+  "status_code": 400
+}
 ```
 
-**Device already logged (400):**
-```json
-{"detail": "Device SN123456 has already been logged as taken."}
-```
+**Common errors:**
+
+| Error | Status | When |
+|---|---|---|
+| `insufficient_stock` | 400 | Giving out more than available |
+| `duplicate_serial` | 400 | Device serial number already logged |
+| `invalid_date` | 400 | Date not in YYYY-MM-DD format |
+| `invalid_category` | 400 | Unknown category name |
