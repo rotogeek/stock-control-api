@@ -106,7 +106,7 @@ def get_stock_level(category: str, subtype: str = "") -> dict:
         "subtype": subtype,
         "current_quantity": record["quantity"],
         "reorder_level": reorder_level,
-        "is_low": record["quantity"] <= reorder_level,
+        "is_low": reorder_level > 0 and record["quantity"] <= reorder_level,
         "last_updated": record["last_updated"],
     }
 
@@ -220,7 +220,7 @@ def get_dashboard() -> dict:
             "subtype": item["subtype"],
             "current_quantity": item["quantity"],
             "reorder_level": item["reorder_level"],
-            "is_low": item["quantity"] <= item["reorder_level"],
+            "is_low": item["reorder_level"] > 0 and item["quantity"] <= item["reorder_level"],
             "last_updated": item["last_updated"],
         }
         for item in all_stock
