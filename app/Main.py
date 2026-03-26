@@ -16,6 +16,8 @@ HOW TO RUN:
 Once running, visit http://localhost:8000/docs for interactive API docs.
 """
 
+from datetime import datetime
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -23,6 +25,9 @@ from app import Config as config
 from app.middleware.logging import RequestLoggingMiddleware
 from app.models.errors import StockAPIError
 from app.routes import alerts, batteries, chargers, cleaning, dashboard, devices, reports, settings, sim_cards, stickers, till_rolls, transactions
+from app.storage import memory as storage
+
+_start_time = datetime.now()
 
 # =============================================================================
 # Create the Application
@@ -114,6 +119,31 @@ def health_check():
         "service": config.APP_NAME,
         "version": "0.1.0",
         "environment": config.APP_ENV,
+    }
+
+
+@app.get("/api/health/detailed")
+def health_detailed():
+    """
+    Detailed system status — uptime, transaction count, and active alert count.
+
+    Use this to get a quick picture of system activity without loading the
+    full dashboard. Useful for monitoring and ops checks.
+    """
+    uptime = datetime.now() - _start_time
+    total_transactions = len(storage.get_transactions())
+    active_alerts = len([
+        item for item in storage.get_all_stock()
+        if item["reorder_level"] > 0 and item["quantity"] <= item["reorder_level"]
+    ])
+
+    return {
+        "status": "healthy",
+        "version": "0.1.0",
+        "uptime_seconds": int(uptime.total_seconds()),
+        "total_transactions_recorded": total_transactions,
+        "active_low_stock_alerts": active_alerts,
+        "started_at": _start_time.isoformat(),
     }
 
 
