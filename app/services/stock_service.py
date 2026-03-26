@@ -280,6 +280,12 @@ def update_reorder_level(category: str, subtype: str, level: int) -> dict:
     When stock drops to or below this number after a give-out, an alert fires.
     Setting level to 0 effectively disables alerting for that item.
     """
+    valid_categories = {item.value for item in ItemCategory}
+    if category not in valid_categories:
+        raise StockAPIError(
+            error="invalid_category",
+            detail=f"Unknown category: '{category}'. Valid values: {sorted(valid_categories)}.",
+        )
     storage.set_reorder_level(category, subtype, level)
     return {
         "category": category,
