@@ -3,6 +3,8 @@
 Manual testing guide for every endpoint. Run through this before any release.
 All testing is done via the interactive docs at `http://localhost:8000/docs`.
 
+**Last verified:** 2026-03-26 — all 65 checks passed, no bugs found.
+
 ---
 
 ## Setup
