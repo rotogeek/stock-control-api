@@ -18,10 +18,10 @@ from fastapi import APIRouter
 from app.models.Inventory import StockLevel
 from app.services import stock_service
 
-router = APIRouter(prefix="/api", tags=["Alerts"])
+router = APIRouter(prefix="/api/alerts", tags=["Alerts"])
 
 
-@router.get("/alerts", response_model=list[StockLevel])
+@router.get("", response_model=list[StockLevel])
 def get_alerts():
     """
     Return all stock items currently at or below their reorder level.
