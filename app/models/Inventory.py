@@ -43,7 +43,7 @@ class MovementType(str, Enum):
     Only two things happen to stock:
       - USED: given out to someone (stock goes DOWN)
       - RECEIVED: new delivery arrived (stock goes UP)
-    
+
     That's it. No "adjust", no "return". Keep it real.
     """
     USED = "used"
@@ -184,7 +184,7 @@ class DeviceUsedRequest(_StripStrings):
 class BatteryUpdateRequest(BaseModel):
     """
     Update how many batteries are in each charging stage.
-    
+
     Unlike other items, batteries cycle through statuses:
     charging → ready → in_use. You're tracking WHERE they are
     in the process, not just a count.
@@ -243,7 +243,7 @@ class BatteryStatusResponse(BaseModel):
 class StockLevel(BaseModel):
     """
     Current stock level for one item on the dashboard.
-    
+
     This is what the stock controller sees when they log in:
     the item, how many are left, and whether it needs reordering.
     """
@@ -258,7 +258,7 @@ class StockLevel(BaseModel):
 class DailyUsageSummary(BaseModel):
     """
     One line in the end-of-day report.
-    
+
     Example: "Till Rolls — Used today: 12 — Remaining: 38"
     """
     category: ItemCategory
@@ -271,7 +271,7 @@ class DailyUsageSummary(BaseModel):
 class DailyReport(BaseModel):
     """
     The full end-of-day report sent to the stock controller.
-    
+
     Shows everything that happened today and current stock levels.
     """
     date: str                                # "2026-03-10"
@@ -283,7 +283,7 @@ class DailyReport(BaseModel):
 class AlertNotification(BaseModel):
     """
     In-app alert when stock drops below reorder level.
-    
+
     This appears in the app when the stock controller is logged in.
     """
     category: ItemCategory
@@ -422,7 +422,7 @@ class TransactionListResponse(BaseModel):
 class ReorderLevelUpdate(BaseModel):
     """
     Set the reorder threshold for an item.
-    
+
     When stock drops to or below this number, an alert fires.
     Each item can have a different threshold because you use
     stickers faster than you use label remover.

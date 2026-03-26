@@ -10,7 +10,8 @@ The stock controller checks this at the start of the day. If it's empty,
 all stock is above threshold. If items appear here, an order needs placing.
 
 This returns the CURRENT state — items that are low right now.
-For a history of when items went low, see the alert log (future endpoint).
+The alert event log (when items went low historically) is in the storage layer
+and will be exposed in Phase 3 reporting.
 """
 
 from fastapi import APIRouter
