@@ -25,6 +25,7 @@ from app import Config as config
 from app.middleware.logging import RequestLoggingMiddleware
 from app.models.errors import StockAPIError
 from app.routes import alerts, batteries, chargers, cleaning, dashboard, devices, reports, settings, sim_cards, stickers, till_rolls, transactions
+from app.database import check_connection
 from app.storage import memory as storage
 
 _start_time = datetime.now()
@@ -137,12 +138,15 @@ def health_detailed():
         if item["reorder_level"] > 0 and item["quantity"] <= item["reorder_level"]
     ])
 
+    db_connected = check_connection()
+
     return {
-        "status": "healthy",
+        "status": "healthy" if db_connected else "degraded",
         "version": "0.1.0",
         "uptime_seconds": int(uptime.total_seconds()),
         "total_transactions_recorded": total_transactions,
         "active_low_stock_alerts": active_alerts,
+        "database": "connected" if db_connected else "unreachable",
         "started_at": _start_time.isoformat(),
     }
 
