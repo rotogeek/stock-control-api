@@ -16,3 +16,10 @@ pydantic==2.9.0
 
 # Environment variable loading — reads .env files securely
 python-dotenv==1.0.1
+
+# Database — SQLAlchemy is the ORM (Python ↔ SQL), psycopg2 is the PostgreSQL driver
+SQLAlchemy==2.0.36
+psycopg2-binary==2.9.10
+
+# Database migrations — tracks and applies schema changes
+alembic==1.14.0
