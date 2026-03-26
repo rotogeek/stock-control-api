@@ -19,6 +19,7 @@ Once running, visit http://localhost:8000/docs for interactive API docs.
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from app import Config as config
+from app.middleware.logging import RequestLoggingMiddleware
 from app.models.errors import StockAPIError
 from app.routes import alerts, batteries, chargers, cleaning, dashboard, devices, reports, settings, sim_cards, stickers, till_rolls, transactions
 
@@ -65,6 +66,15 @@ _routers = [
 
 for _router in _routers:
     app.include_router(_router)
+
+
+# =============================================================================
+# Middleware
+# =============================================================================
+# Middleware wraps every request — runs before the route handler and after.
+# Order matters: middleware added last runs outermost (first on the way in).
+
+app.add_middleware(RequestLoggingMiddleware)
 
 
 # =============================================================================
