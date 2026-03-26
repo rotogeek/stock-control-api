@@ -43,10 +43,10 @@ from app import Config as config
 
 engine = create_engine(
     config.DATABASE_URL,
-    pool_size=5,           # Keep 5 connections open and ready
-    max_overflow=10,       # Allow up to 10 extra connections under load
-    pool_timeout=30,       # Wait up to 30s for a free connection before erroring
-    echo=config.DEBUG,     # Log SQL queries in development, not production
+    pool_size=config.DB_POOL_SIZE,
+    max_overflow=config.DB_MAX_OVERFLOW,
+    pool_timeout=config.DB_POOL_TIMEOUT,
+    echo=config.DEBUG,     # Logs every SQL query — useful in development, noisy in production
 )
 
 
