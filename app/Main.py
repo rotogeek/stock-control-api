@@ -17,6 +17,7 @@ Once running, visit http://localhost:8000/docs for interactive API docs.
 """
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app import Config as config
 from app.middleware.logging import RequestLoggingMiddleware
@@ -75,6 +76,16 @@ for _router in _routers:
 # Order matters: middleware added last runs outermost (first on the way in).
 
 app.add_middleware(RequestLoggingMiddleware)
+
+# CORS — browsers block cross-origin requests by default. Without this,
+# a React frontend running on localhost:3000 cannot call this API on :8000.
+# In production, replace "*" with the exact frontend domain.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # =============================================================================
