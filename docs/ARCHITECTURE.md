@@ -75,6 +75,41 @@ Seven categories, three patterns:
 
 **Status tracking** — Refurb batteries. Tracked by how many are in each stage: charging, ready, or in use. This is different from "how many do we have" — it's "where are they in the process."
 
+## Request Lifecycle (with Middleware)
+
+Every request passes through middleware before reaching a route handler:
+
+```
+Client Request
+      │
+      ▼
+CORSMiddleware          ← Adds CORS headers so browsers can call the API
+      │
+      ▼
+RequestLoggingMiddleware ← Records timestamp, method, path; attaches X-Request-ID
+      │
+      ▼
+Route Handler           ← Does the actual work (give out stock, get dashboard, etc.)
+      │
+      ▼
+RequestLoggingMiddleware ← Records status code and response time, writes log line
+      │
+      ▼
+Client Response         ← Includes X-Request-ID header
+```
+
+**Request logging** — every request produces one log line:
+```
+2026-03-20 09:15:23 | POST   /api/till-rolls/use | 200 | 45ms | req-abc12345
+```
+
+**Request ID** — each response carries `X-Request-ID`. If a stock controller reports
+an error, you can find the exact request in the logs using that ID.
+
+**CORS** — browsers enforce same-origin policy. Without CORS headers, the future
+React frontend (running on a different port) would be blocked from calling the API.
+In production, `allow_origins=["*"]` should be replaced with the frontend's domain.
+
 ## Security Decisions (Still Apply)
 
 Even with a simpler role model, these still matter:
